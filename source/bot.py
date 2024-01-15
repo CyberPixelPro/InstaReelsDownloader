@@ -1,8 +1,8 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import config
-from modules.database import add_user
-from modules.mustjoin import is_user_member
+from utils.database import add_user
+from utils.mustjoin import is_user_member
 from modules.instagram import download_reel
 
 app = Client("my_bot", bot_token=config.TELEGRAM_TOKEN)
@@ -30,5 +30,7 @@ async def handle_instagram_link(client, message):
         await message.reply_video(video=download_path)
     else:
         await message.reply("Sorry, I couldn't download the Reel.")
+
+# Add more handlers as needed
 
 app.run()
