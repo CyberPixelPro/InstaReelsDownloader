@@ -31,6 +31,5 @@ async def handle_instagram_link(client, message):
     else:
         await message.reply("Sorry, I couldn't download the Reel.")
 
-# Add more handlers as needed
 
 app.run()
