@@ -11,9 +11,9 @@ app = Client("my_bot", bot_token=config.TELEGRAM_TOKEN)
 async def start(client, message):
     user_id = message.from_user.id
     username = message.from_user.username
-    add_user(user_id, username)
+    await add_user(user_id, username)  # Assuming add_user is an async function
 
-    if await is_user_member(client, user_id):
+    if await is_user_member(client, user_id, config.REQUIRED_CHANNEL):
         await message.reply("Welcome to the bot! You're all set to start downloading Instagram Reels.")
     else:
         await message.reply("Please join our channel first to use this bot.",
@@ -31,5 +31,5 @@ async def handle_instagram_link(client, message):
     else:
         await message.reply("Sorry, I couldn't download the Reel.")
 
-
 app.run()
+
