@@ -14,7 +14,7 @@ app = Client("my_bot",
 async def start(client, message):
     user_id = message.from_user.id
     username = message.from_user.username
-    await add_user(user_id, username)  # Assuming add_user is an async function
+    add_user(user_id, username)
 
     if await is_user_member(client, user_id, config.REQUIRED_CHANNEL):
         await message.reply("Welcome to the bot! You're all set to start downloading Instagram Reels.")
