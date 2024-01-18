@@ -5,7 +5,10 @@ from utils.database import add_user
 from utils.mustjoin import is_user_member
 from modules.instagram import download_reel
 
-app = Client("my_bot", bot_token=config.TELEGRAM_TOKEN)
+app = Client("my_bot",
+             api_id=config.API_ID,
+             api_hash=config.API_HASH,
+             bot_token=config.TELEGRAM_TOKEN)
 
 @app.on_message(filters.command("start"))
 async def start(client, message):
