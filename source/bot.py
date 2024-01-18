@@ -21,7 +21,10 @@ async def start(client, message):
                                 [InlineKeyboardButton("Join Channel", url=f"https://t.me/{config.REQUIRED_CHANNEL.lstrip('@')}")]
                             ]))
 
-@app.on_message(filters.regex(r'https?://www.instagram.com/p/[\w-]+') & ~filters.command)
+def not_a_command(_, __, message):
+    return not message.text.startswith('/')
+
+@app.on_message(filters.regex(r'https?://www.instagram.com/p/[\w-]+') & filters.create(not_a_command))
 async def handle_instagram_link(client, message):
     instagram_url = message.matches[0].group(0)
     download_path = await download_reel(instagram_url)
