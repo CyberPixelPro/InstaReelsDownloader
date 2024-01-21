@@ -3,61 +3,64 @@ import os
 from bs4 import BeautifulSoup
 import re
 
-async def modify_url(instagram_url):
-    modified_url = instagram_url.replace('www.instagram.com', 'www.ddinstagram.com')
-    print(f"Modified URL: {modified_url}")  # Debugging
-    return modified_url
+# Use a common browser user agent to mimic browser behavior.
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+}
 
-async def extract_download_link(client, modified_url):
-    try:
-        response = await client.get(modified_url)
+async def fetch_video_page(url):
+    print(f"Fetching page for URL: {url}")
+    async with httpx.AsyncClient(headers=HEADERS) as client:
+        response = await client.get(url)
         if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            video_tag = soup.find('a', href=re.compile(r'(.mp4)$'))
-            if video_tag and 'href' in video_tag.attrs:
-                print(f"Found video URL: {video_tag['href']}")  # Debugging
-                return video_tag['href']
-            else:
-                print("No video URL found")  # Debugging
-                return None
+            print(f"Page fetched successfully: {url}")
+            return response.text
         else:
-            print(f"Failed to fetch modified URL: Status code {response.status_code}")  # Debugging
+            print(f"Failed to fetch page, status code: {response.status_code}")
             return None
-    except Exception as e:
-        print(f"Error in extract_download_link: {e}")  # Debugging
+
+async def extract_video_url(page_content):
+    if not page_content:
+        print("No page content to extract video URL from.")
         return None
 
-async def download_video(client, video_url, destination_folder='/cache'):
-    try:
-        if not os.path.exists(destination_folder):
-            os.makedirs(destination_folder)
+    print("Extracting video URL from page content.")
+    soup = BeautifulSoup(page_content, 'html.parser')
+    video_tag = soup.find('video')
+    if video_tag and video_tag.get('src'):
+        print(f"Found video URL: {video_tag.get('src')}")
+        return video_tag.get('src')
+    else:
+        print("No video URL found in page content.")
+        return None
 
-        local_filename = os.path.join(destination_folder, video_url.split('/')[-1])
+async def download_video(video_url, destination='/cache'):
+    if not video_url:
+        print("No video URL provided to download.")
+        return None
+
+    print(f"Downloading video from URL: {video_url}")
+    async with httpx.AsyncClient(headers=HEADERS) as client:
         response = await client.get(video_url)
         if response.status_code == 200:
-            with open(local_filename, 'wb') as f:
+            filename = os.path.join(destination, video_url.split('/')[-1])
+            if not os.path.exists(destination):
+                os.makedirs(destination)
+            with open(filename, 'wb') as f:
                 f.write(response.content)
-            print(f"Video downloaded: {local_filename}")  # Debugging
-            return local_filename
+            print(f"Video downloaded successfully: {filename}")
+            return filename
         else:
-            print(f"Failed to download video: Status code {response.status_code}")  # Debugging
+            print(f"Failed to download video, status code: {response.status_code}")
             return None
-    except Exception as e:
-        print(f"Error in download_video: {e}")  # Debugging
-        return None
 
 async def download_reel(instagram_url):
-    try:
-        async with httpx.AsyncClient() as client:
-            modified_url = await modify_url(instagram_url)
-            download_link = await extract_download_link(client, modified_url)
-            if download_link:
-                return await download_video(client, download_link)
-            else:
-                print("Download link not found")  # Debugging
-                return None
-    except Exception as e:
-        print(f"Error in download_reel: {e}")  # Debugging
+    print(f"Starting download process for Instagram URL: {instagram_url}")
+    page_content = await fetch_video_page(instagram_url)
+    video_url = await extract_video_url(page_content)
+    if video_url:
+        return await download_video(video_url)
+    else:
+        print("Download process failed. No video was downloaded.")
         return None
-
-
