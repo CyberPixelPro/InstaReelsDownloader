@@ -34,7 +34,7 @@ async def reel_command_handler(client, message):
 
     reel_link = message.command[1]
 
-    download_path = await download_reel(reel_link)
+    download_path = download_reel(reel_link)
 
     if download_path:
         await message.reply_video(video=download_path)
