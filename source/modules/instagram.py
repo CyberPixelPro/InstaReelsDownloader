@@ -10,8 +10,12 @@ def extract_download_link(modified_url):
     response = requests.get(modified_url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
-        video_url = soup.find('a', href=re.compile(r'(.mp4)$'))['href']
-        return video_url
+        video_tag = soup.find('a', href=re.compile(r'(.mp4)$'))
+
+        if video_tag and 'href' in video_tag.attrs:
+            return video_tag['href']
+        else:
+            return None
     else:
         return None
 
