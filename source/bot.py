@@ -14,7 +14,7 @@ app = Client("my_bot",
 async def start(client, message):
     user_id = message.from_user.id
     username = message.from_user.username
-    add_user(user_id, username)
+    add_user(user_id, username)  # Assuming this is a synchronous function
 
     if await is_user_member(client, user_id, config.REQUIRED_CHANNEL):
         await message.reply("Welcome to the bot! You're all set to start downloading Instagram Reels.")
@@ -24,8 +24,6 @@ async def start(client, message):
                                 [InlineKeyboardButton("Join Channel", url=f"https://t.me/{config.REQUIRED_CHANNEL.lstrip('@')}")]
                             ]))
 
-
-
 @app.on_message(filters.command("reel"))
 async def reel_command_handler(client, message):
     if len(message.command) < 2:
@@ -33,13 +31,13 @@ async def reel_command_handler(client, message):
         return
 
     reel_link = message.command[1]
+    download_path = await download_reel(reel_link)
 
-    download_path = download_reel(reel_link)
-
-    if download_path:
-        await message.reply_video(video=download_path)
+    if download_path and os.path.exists(download_path):
+        await message.reply_video(video=open(download_path, 'rb'))
     else:
-        await message.reply("Sorry, I couldn't download the Reel.")
+        await message.reply("Sorry, I couldn't download the Reel. Please make sure the link is correct.")
 
 app.run()
+
 
